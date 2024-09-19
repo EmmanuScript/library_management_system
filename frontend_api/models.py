@@ -47,7 +47,7 @@ class Book(db.Model):
     category = db.Column(db.String(50), nullable=False)
     
     # Indicates availability of the book
-    is_available = db.Column(db.Boolean, default=True, index=True)
+    book_available = db.Column(db.Boolean, default=True, index=True)
     
     # One-to-many relationship with Borrow
     borrow_records = db.relationship('Borrow', backref='book', lazy='dynamic')
@@ -63,7 +63,7 @@ class BookSchema(Schema):
     author = fields.Str(required=True, error_messages={'required': 'Author is required.'})
     publisher = fields.Str(required=True, error_messages={'required': 'Publisher is required.'})
     category = fields.Str(required=True, error_messages={'required': 'Category is required.'})
-    is_available = fields.Boolean(default=True, dump_only=True)
+    book_available = fields.Boolean(default=True, dump_only=True)
 
     @validates('title')
     def validate_title(self, value):
@@ -109,3 +109,6 @@ class BorrowSchema(Schema):
     def validate_days(self, value):
         if value <= 0:
             raise ValidationError("Number of days must be a positive integer.")
+
+class ReturnBookSchema(Schema):
+    user_id = fields.Int(required=True, error_messages={'required': 'User ID is required.'})
