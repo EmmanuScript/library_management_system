@@ -132,3 +132,29 @@ def return_book_controller(id):
         return jsonify({'errors': err.messages}), 400
     except Exception as e:
         return jsonify({'message': str(e)}), 500
+
+@staticmethod
+# Controller for getting books by category
+def get_books_by_category(category):
+    try:
+        category = category.lower()
+        books = Book.query.filter_by(category=category).all()
+        if not books:
+            return jsonify({'message': 'No books found for this category'}), 404
+        books_list = [{'title': book.title, 'author': book.author, 'publisher': book.publisher, 'category': book.category} for book in books]
+        return jsonify(books_list), 200
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
+@staticmethod
+# Controller for getting books by publisher
+def get_books_by_publisher(publisher):
+    try:
+        publisher = publisher.lower()
+        books = Book.query.filter_by(publisher=publisher).all()
+        if not books:
+            return jsonify({'message': 'No books found for this publisher'}), 404
+        books_list = [{'title': book.title, 'author': book.author, 'publisher': book.publisher, 'category': book.category} for book in books]
+        return jsonify(books_list), 200
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500

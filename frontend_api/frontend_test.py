@@ -41,11 +41,12 @@ class TestCase(Base):
     def _insert_test_data(cls):
         # Insert test data here
         # For example:
-        from models import Book, User
+        from models import Book, User, Borrow
 
         test_books = [
             Book(id=1, title="Test Book 1", author="Author 1", publisher="Wiley", category="fiction", book_available = True),
-            Book(id=2, title="Test Book 2", author="Author 2", publisher="J&P", category="fiction", book_available = True),User(id =3, email='testt@example.com', firstname="adebayo", lastname='lukman')
+            Book(id=2, title="Test Book 2", author="Author 2", publisher="Wiley", category="fiction", book_available = True),User(id =3, email='testt@example.com', firstname="adebayo", lastname='lukman'), 
+            Book(id=3, title = 'Test Book 3', author='Author 3', publisher='Smith and sons',category='thriller',book_available=False), Borrow(id=2, user_id=3, book_id=2, days=7, date_borrowed='2024-09-17 23:55:53.561092', date_returned = '2024-09-24 23:55:53.561092')
         ]
 
         db.session.add_all(test_books)
@@ -62,13 +63,11 @@ class TestCase(Base):
 class TestModel(TestCase):
 
     def test_enroll_user(self):
-        response = self.client.post("/api/users/register", 
-                                    data=json.dumps({
-                                        "email": "test@example.com",
-                                        "firstname": "John",
-                                        "lastname": "Doe"
-                                    }),
-                                    content_type='application/json')
+        response = self.client.post("/api/users/register", data=json.dumps({
+        "email": "test@example.com",
+        "firstname": "John",
+        "lastname": "Doe"}),
+        content_type='application/json')
         print(response.data, "uer")
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data)
@@ -93,13 +92,18 @@ class TestModel(TestCase):
         self.assertTrue(any(book['publisher'] == 'Wiley' for book in data))
 
     def test_borrow_book(self):
-        response = self.client.post("/api/books/borrow_books", 
-                                    data=json.dumps({"user_id": 3, "days": 7, "book_id": 2}),
-                                    content_type='application/json')
+        response = self.client.post("/api/books/borrow_books", data=json.dumps({"user_id": 3, "days": 7, "book_id": 1}),content_type='application/json')
         print("h56", response.data)
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data)
         self.assertEqual(data["message"], "Borrowed Successfully")
+    
+    def test_return_book(self):
+        response = self.client.post("/api/books/return_books/2", data=json.dumps({"user_id": 3}),content_type='application/json')
+        print("h56", response.data)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data["message"], "Book returned successfully")
 
     def test_filter_books_by_category(self):
         response = self.client.get("/api/books?category=fiction")

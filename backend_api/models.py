@@ -40,14 +40,14 @@ class UserSchema(Schema):
 # Book Model
 class Book(db.Model):
     __tablename__ = 'books'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)   
     title = db.Column(db.String(120), nullable=False)
     author = db.Column(db.String(100), nullable=False)
     publisher = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50), nullable=False)
     
     # Indicates availability of the book
-    is_available = db.Column(db.Boolean, default=True, index=True)
+    book_available = db.Column(db.Boolean, default=True, index=True)
     
     # One-to-many relationship with Borrow
     borrow_records = db.relationship('Borrow', backref='book', lazy='dynamic')
@@ -63,7 +63,7 @@ class BookSchema(Schema):
     author = fields.Str(required=True, error_messages={'required': 'Author is required.'})
     publisher = fields.Str(required=True, error_messages={'required': 'Publisher is required.'})
     category = fields.Str(required=True, error_messages={'required': 'Category is required.'})
-    is_available = fields.Boolean(default=True, dump_only=True)
+    book_available = fields.Boolean(default=True, dump_only=True)
 
     @validates('title')
     def validate_title(self, value):
@@ -93,7 +93,7 @@ class Borrow(db.Model):
     # Checks to see if overdue
     @property
     def is_overdue(self):
-        return datetime.utcnow() > self.return_date
+        return datetime.utcnow() > self.date_returned
 
 
 # Borrow Schema with Validation

@@ -23,7 +23,7 @@ class BackendController:
                 author=data['author'],
                 publisher=data['publisher'],
                 category=data['category'],
-                is_available=True
+                book_available=True
             )
             db.session.add(new_book)
             db.session.commit()
@@ -55,17 +55,37 @@ class BackendController:
     @staticmethod
     def list_books_user_borrowed():
         try:
+            # Query all borrowed books
             borrows = Borrow.query.all()
-            borrowed_list = [{'user_id': borrow.user_id, 'book_id': borrow.book_id, 'borrow_date': borrow.borrow_date, 'return_date': borrow.return_date} for borrow in borrows]
+
+            # Check if any borrow records exist
+            if not borrows:
+                return jsonify({'message': 'No borrowed books found'}), 404
+
+            # Create a list of borrowed books
+            borrowed_list = [
+                {
+                    'user_id': borrow.user_id, 
+                    'book_id': borrow.book_id, 
+                    'borrow_date': borrow.date_borrowed, 
+                    'return_date': borrow.date_returned
+                } 
+                for borrow in borrows
+            ]
             return jsonify(borrowed_list), 200
+        
         except Exception as e:
-            return jsonify({'message': str(e)}), 500
+            # Log any other unexpected errors
+            return jsonify({'message': 'An unexpected error occurred. Please try again later.', 'error': e}), 500
+
 
     @staticmethod
     def unavailable_books():
         try:
-            books = Book.query.filter_by(is_available=False).all()
+            books = Book.query.filter_by(book_available=False).all()
             book_list = [{'id': book.id, 'title': book.title, 'author': book.author, 'publisher': book.publisher, 'category': book.category} for book in books]
             return jsonify(book_list), 200
         except Exception as e:
             return jsonify({'message': str(e)}), 500
+    
+    
