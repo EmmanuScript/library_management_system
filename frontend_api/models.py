@@ -110,5 +110,7 @@ class BorrowSchema(Schema):
         if value <= 0:
             raise ValidationError("Number of days must be a positive integer.")
 
+borrow_schema = BorrowSchema()
+
 class ReturnBookSchema(Schema):
     user_id = fields.Int(required=True, error_messages={'required': 'User ID is required.'})

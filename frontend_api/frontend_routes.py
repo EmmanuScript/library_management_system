@@ -22,3 +22,13 @@ def borrow_book():
 @frontend.route('/api/books/return_books/<int:id>', methods=['POST'])
 def return_book(id):
     return return_book_controller(id)
+
+# Get books by publisher
+@frontend.route('/api/books/publisher/<string:publisher>', methods=['GET'])
+def books_by_publisher(publisher):
+    return get_books_by_publisher(publisher)
+
+# Get books by category
+@frontend.route('/api/books/category/<string:category>', methods=['GET'])
+def books_by_category(category):
+    return get_books_by_category(category)

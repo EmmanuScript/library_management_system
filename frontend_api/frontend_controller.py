@@ -2,6 +2,8 @@ from flask import jsonify, request
 from models import BorrowSchema, ReturnBookSchema, UserSchema, db, Book, User, Borrow
 from datetime import datetime, timedelta
 from marshmallow import ValidationError
+from rabbitmq_event_sender import send_borrow_event
+from flask import current_app
 
 def register_user_controller():  
     schema = UserSchema()  
@@ -96,6 +98,8 @@ def borrow_book_controller():
             db.session.add(borrow)
             book.book_available = False
             db.session.commit()
+            # Send the borrow event to RabbitMQ
+            send_borrow_event(book_id, user_id, days)
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": str(e)}), 500
@@ -130,5 +134,31 @@ def return_book_controller(id):
     
     except ValidationError as err:
         return jsonify({'errors': err.messages}), 400
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
+@staticmethod
+# Controller for getting books by category
+def get_books_by_category(category):
+    try:
+        category = category.lower()
+        books = Book.query.filter_by(category=category).all()
+        if not books:
+            return jsonify({'message': 'No books found for this category'}), 404
+        books_list = [{'title': book.title, 'author': book.author, 'publisher': book.publisher, 'category': book.category} for book in books]
+        return jsonify(books_list), 200
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
+@staticmethod
+# Controller for getting books by publisher
+def get_books_by_publisher(publisher):
+    try:
+        publisher = publisher.lower()
+        books = Book.query.filter_by(publisher=publisher).all()
+        if not books:
+            return jsonify({'message': 'No books found for this publisher'}), 404
+        books_list = [{'title': book.title, 'author': book.author, 'publisher': book.publisher, 'category': book.category} for book in books]
+        return jsonify(books_list), 200
     except Exception as e:
         return jsonify({'message': str(e)}), 500
