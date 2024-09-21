@@ -4,9 +4,13 @@ from unittest import TestCase as Base
 import json
 from models import db
 from frontend_routes import frontend
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class MyConfig(object):
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:olamizzy66@localhost:5432/library_test_db"
+    SQLALCHEMY_DATABASE_URI =  os.getenv('DATABASE_TEST_URL', 'postgresql://<username>:<password>@<db>:5432/<test_db>')
     TESTING = True
 
 def create_app(config=None):
@@ -68,7 +72,6 @@ class TestModel(TestCase):
         "firstname": "John",
         "lastname": "Doe"}),
         content_type='application/json')
-        print(response.data, "uer")
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data)
         self.assertEqual(data["email"], "test@example.com")
@@ -93,14 +96,12 @@ class TestModel(TestCase):
 
     def test_borrow_book(self):
         response = self.client.post("/api/books/borrow_books", data=json.dumps({"user_id": 3, "days": 7, "book_id": 1}),content_type='application/json')
-        print("h56", response.data)
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data)
         self.assertEqual(data["message"], "Borrowed Successfully")
     
     def test_return_book(self):
         response = self.client.post("/api/books/return_books/2", data=json.dumps({"user_id": 3}),content_type='application/json')
-        print("h56", response.data)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data["message"], "Book returned successfully")

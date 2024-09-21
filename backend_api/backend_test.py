@@ -4,12 +4,18 @@ from unittest import TestCase as Base
 import json
 from models import db
 from backend_routes import backend
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class MyConfig(object):
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:olamizzy66@localhost:5432/library_test_db"
+    SQLALCHEMY_DATABASE_URI =  os.getenv('DATABASE_TEST_URL', 'postgresql://<username>:<password>@<db>:5432/<test_db>')
     TESTING = True
 
 def create_app(config=None):
+    load_dotenv()
     app = Flask(__name__)
     app.config.from_object(config)
     db.init_app(app)

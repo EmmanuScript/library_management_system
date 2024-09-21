@@ -2,6 +2,8 @@ from flask import jsonify, request
 from models import BorrowSchema, ReturnBookSchema, UserSchema, db, Book, User, Borrow
 from datetime import datetime, timedelta
 from marshmallow import ValidationError
+from rabbitmq_event_sender import send_borrow_event
+from flask import current_app
 
 def register_user_controller():  
     schema = UserSchema()  
@@ -96,6 +98,8 @@ def borrow_book_controller():
             db.session.add(borrow)
             book.book_available = False
             db.session.commit()
+            # Send the borrow event to RabbitMQ
+            send_borrow_event(book_id, user_id, days)
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": str(e)}), 500
