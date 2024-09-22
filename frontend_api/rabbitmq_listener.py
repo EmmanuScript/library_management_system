@@ -1,19 +1,9 @@
-# rabbitmq_service.py
+# rabbitmq_listener.py
 import pika
 import json
-from models import db, Book, Borrow
-from flask import app
+from models import db, Book
 
 # Callback to handle book actions based on the message
-def callback(ch, method, properties, body):
-    message = json.loads(body)
-    action = message.get('action')
-    book_data = message.get('book')
-
-    if action and book_data:
-        with app.app_context():  # Automatically reference the current app context
-            handle_message(action, book_data)
-
 def handle_message(action, book_data):
     if action == 'add_book':
         new_book = Book(
@@ -33,6 +23,15 @@ def handle_message(action, book_data):
             db.session.delete(book)
             db.session.commit()
 
+# Callback that processes the incoming message
+def callback(ch, method, properties, body, app):
+    message = json.loads(body)
+    action = message.get('action')
+    book_data = message.get('book')
+
+    if action and book_data:
+        with app.app_context():  # Use the app context to access the database
+            handle_message(action, book_data)
 
 # Function to set up the RabbitMQ listener
 def start_rabbitmq_listener(app, queue_name='library', rabbitmq_host='localhost'):
